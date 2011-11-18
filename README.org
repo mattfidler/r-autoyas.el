@@ -1,0 +1,31 @@
+#+TITLE: R-autoyas
+#+AUTHOR: Sven  Hartenstein & Matthew L. Fidler
+
+* About
+r-autoyas is a small ESS complement. It provides automatically created
+yasnippets for R function argument lists.
+
+* Requirements
+The following are needed:
+- yasnippet https://github.com/capitaomorte/yasnippet
+- R & ESS
+- R process must be running.
+* Usage
+- To expand the snipped type the function name and them press =TAB=.
+- To jump from field to feild press =TAB=.  If you did not change the
+  field, the parameter will be deleted from this list
+- To exit the snipped and delete remaining arguments, press =C-g=
+* Limitations
+- No nice error handling when no R process is found
+- Partial nested support -- not perfected
+* Loading r-autoyas in ~/.emacs
+You may use marmalade-repo and ELPA to install yasnippet
+(http://marmalade-repo.org/), or put it into your load-path and put
+the following in ~/.emacs
+
+#+BEGIN_SRC emacs-lisp :results silent
+(require 'r-autoyas)
+#+END_SRC
+
+
+#  LocalWords:  yasnippets autoyas ESS Hartenstein
