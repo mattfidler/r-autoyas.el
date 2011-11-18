@@ -7,10 +7,10 @@
 
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
 ;; Version: 0.24
-;; Last-Updated: Thu Nov 17 13:03:35 2011 (-0600)
+;; Last-Updated: Fri Nov 18 14:35:01 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 797
-;; URL: http://www.svenhartenstein.de/Software/R-autoyas
+;;     Update #: 799
+;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
 ;;
@@ -53,6 +53,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 18-Nov-2011    Matthew L. Fidler  
+;;    Last-Updated: Fri Nov 18 14:34:39 2011 (-0600) #798 (Matthew L. Fidler)
+;;    Added gihub URL
 ;; 17-Nov-2011    Matthew L. Fidler  
 ;;    Last-Updated: Thu Nov 17 13:02:52 2011 (-0600) #795 (Matthew L. Fidler)
 ;;    Fixed `called-interactively-p' to have a single argument.
