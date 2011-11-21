@@ -19,7 +19,7 @@ The following are needed:
 - No nice error handling when no R process is found
 - Partial nested support -- not perfected
 * Loading r-autoyas in ~/.emacs
-You may use marmalade-repo and ELPA to install yasnippet
+You may use marmalade-repo and ELPA to install r-autoyas
 (http://marmalade-repo.org/), or put it into your load-path and put
 the following in ~/.emacs
 
