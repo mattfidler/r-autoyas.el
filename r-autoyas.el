@@ -6,10 +6,10 @@
 ;; Maintainer: Sven Hartenstein
 
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
-;; Version: 0.24
-;; Last-Updated: Fri Nov 18 14:35:01 2011 (-0600)
+;; Version: 0.25
+;; Last-Updated: Tue Nov 29 09:01:07 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 799
+;;     Update #: 801
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
@@ -53,6 +53,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 29-Nov-2011    Matthew L. Fidler  
+;;    Last-Updated: Fri Nov 18 14:35:01 2011 (-0600) #799 (Matthew L. Fidler)
+;;    Change the *r-autoyas* buffer to be hidden (ie " *r-autoyas*")
 ;; 18-Nov-2011    Matthew L. Fidler  
 ;;    Last-Updated: Fri Nov 18 14:34:39 2011 (-0600) #798 (Matthew L. Fidler)
 ;;    Added gihub URL
@@ -545,11 +548,11 @@ RM-PAREN removes the inserted parenthesis"
 	      n-comma)
 	  (if (not funcname) nil
 	    (ess-command (concat ".r.autoyas.create('" funcname "')\n")
-			 (get-buffer-create "*r-autoyas*"))
+			 (get-buffer-create " *r-autoyas*"))
 	    (unless (null funcname)
 	      (let (snippet)
 		(save-excursion
-		  (with-current-buffer "*r-autoyas*"
+		  (with-current-buffer " *r-autoyas*"
 		    (if (< (length (buffer-string)) 10);; '[1] " "' if no valid fun
 			(progn
 			  (message "function `%s' is not valid!" funcname)
@@ -748,18 +751,18 @@ cat(\"Loaded r-autoyas\\n\");
   "Returns the namespace for FUNCTION-NAME, or nil if it cannot be determined."
   (let ((namespace nil))
     (ess-command (concat "print(" function-name ")\n")
-                 (get-buffer-create "*r-autoyas*"))
+                 (get-buffer-create " *r-autoyas*"))
     (save-excursion
-      (with-current-buffer "*r-autoyas*"
+      (with-current-buffer " *r-autoyas*"
 	(goto-char (point-max))
 	(when (re-search-backward "<environment:[ \t]*namespace:\\(.*?\\)>" nil t)
 	  (setq namespace (match-string 1)))))
     (unless namespace
       ;; Look for XXX.default
       (ess-command (concat "print(" function-name ".default)\n")
-                   (get-buffer-create "*r-autoyas*"))
+                   (get-buffer-create " *r-autoyas*"))
       (save-excursion
-        (with-current-buffer "*r-autoyas*"
+        (with-current-buffer " *r-autoyas*"
           (goto-char (point-max))
           (when (re-search-backward "<environment:[ \t]*namespace:\\(.*?\\)>" nil t)
             (setq namespace (match-string 1))))))
@@ -785,8 +788,8 @@ cat(\"Loaded r-autoyas\\n\");
 	    (when with-paren
 	      (setq tmp (substring tmp 0 -1)))
             (ess-command (concat "existsFunction(\"" tmp "\");\n")
-                         (get-buffer-create "*r-autoyas*"))
-            (with-current-buffer "*r-autoyas*"
+                         (get-buffer-create " *r-autoyas*"))
+            (with-current-buffer " *r-autoyas*"
               (goto-char (point-min))
               (when (save-match-data (search-forward " TRUE" nil t))
                 (setq ret t))))
