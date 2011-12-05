@@ -7,9 +7,9 @@
 
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
 ;; Version: 0.25
-;; Last-Updated: Tue Nov 29 09:01:07 2011 (-0600)
+;; Last-Updated: Sat Dec  3 22:20:47 2011 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 801
+;;     Update #: 834
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
@@ -184,6 +184,11 @@
   "R auto Yasnippet generation."
   :group 'yasnippet)
 
+(defcustom r-autoyas-debug nil
+  "Add debugging comments for`r-autoyas'"
+  :type 'boolean
+  :group 'r-autoyas)
+
 (defcustom r-autoyas-use-r-based-dot-replacement t
   "Uses Lisp-based dot-replacement defined by `r-autoyas-r-based-dot-replacement' instead of specifying through options in R startup."
   :type 'boolean
@@ -197,7 +202,6 @@
            (repeat
             (string :tag "Extra argument: "))))
   :group 'r-autoyas)
-
 
 (defcustom r-autoyas-use-lisp-based-dot-replacement t
   "Uses Lisp-based dot-replacement defined by `r-autoyas-lisp-based-dot-replacement' instead of specifying through options in R startup."
@@ -225,6 +229,7 @@
   "List of functions to ignore when creating auto-snippets by inserting a parenthesis"
   :type '(repeat (string :tag "Ignored R function"))
   :group 'r-autoyas)
+
 (defalias 'r-autoyas-ignored-functions r-autoyas-paren-ignored-functions)
 
 (defcustom r-autoyas-number-of-commas-before-return 4
@@ -289,7 +294,6 @@ write.table(d,
             qmethod=c(\"escape\", \"double\"));
 
 "
-  
   :type 'boolean
   :group 'r-autoyas)
 
@@ -327,8 +331,7 @@ write.table(d,
                  "quote=TRUE"
                  "eol=\"\\n\""
                  "na=\"NA\""
-                 "row.names=TRUE"
-                 ))
+                 "row.names=TRUE"))
     ("bwplot" (
                "allow.multiple = quote(is.null(groups) || outer)"
                "outer = FALSE"
@@ -447,11 +450,18 @@ write.table(d,
   :type 'boolean
   :group 'r-autoyas)
 
+(defun r-autoyas-m (&rest objects)
+  "Message when debugging is on."
+  (when r-autoyas-debug
+    (apply 'message objects)))
+
 ;;${3:$(if (string= "" text) "" ", ")}${3:...$(yas/ma "")}
 (defun r-autoyas-generte-dotreplace-list-lisp (func)
   "Generates dot-replacement yasnippet based on lisp options"
+  (r-autoyas-m "Calling `r-autoyas-generate-dotreplace-list-lisp' %s" func)
   (when r-autoyas-use-lisp-based-dot-replacement
     (when (assoc func r-autoyas-lisp-based-dot-replacement)
+      (r-autoyas-m "Found a lisp replacement for %s" func)
       (goto-char (point-min))
       (let ((num 0)
             (snip ""))
@@ -474,11 +484,12 @@ write.table(d,
 		     (nth 1 (assoc func r-autoyas-lisp-based-dot-replacement))
 		     "")))
 	    (replace-match (format "%s${%s:$(rayas/comma nil %s)}${%s:...$(rayas/ma \"\")}" snip num num num) t t)))
-	(message "Snippet: %s" snip)
+	(r-autoyas-m "Snippet: %s" snip)
 	(symbol-value 'snip)))))
 
 (defun r-autoyas-generate-dotreplace-list ()
   "Generates dot-replace R-code"
+  (r-autoyas-m "Calling `r-autoyas-generate-dotreplace-list'")
   (when r-autoyas-use-r-based-dot-replacement
     (let ((ret
            (concat "options(r.autoyas.dotreplace=list("
@@ -499,6 +510,7 @@ write.table(d,
 (defun r-autoyas-exit-snippet-delete-remaining ()
   "Exit yas snippet and delete the remaining argument list."
   (interactive "*")
+  (r-autoyas-m "Call `r-autoyas-exit-snippet-delete-remaining'")
   (r-autoyas-update)
   (let ((deletefrom (point)))
     (yas/exit-snippet (nth 0 (yas/snippets-at-point)))
@@ -519,6 +531,7 @@ write.table(d,
 (defun r-autoyas-wrap ()
   "Wrap code"
   (interactive)
+  (r-autoyas-m "Calling `r-autoyas-wrap'")
   (when (looking-back ")")
     (let ((pt (point)))
       (save-excursion
@@ -537,6 +550,7 @@ write.table(d,
 expand the snippets.
 RM-PAREN removes the inserted parenthesis"
   (interactive "*")
+  (r-autoyas-m "Calling `r-autoyas-expand'")
   (save-match-data
       (save-restriction
 	(widen)
@@ -547,12 +561,15 @@ RM-PAREN removes the inserted parenthesis"
 	      not-valid
 	      n-comma)
 	  (if (not funcname) nil
+            (r-autoyas-m "Starting to create snippet")
 	    (ess-command (concat ".r.autoyas.create('" funcname "')\n")
 			 (get-buffer-create " *r-autoyas*"))
+            (r-autoyas-m "Created snippet in ` *r-autoyas*'")
 	    (unless (null funcname)
 	      (let (snippet)
 		(save-excursion
 		  (with-current-buffer " *r-autoyas*"
+                    (r-autoyas-m "Trying to extract snippet.")
 		    (if (< (length (buffer-string)) 10);; '[1] " "' if no valid fun
 			(progn
 			  (message "function `%s' is not valid!" funcname)
@@ -575,7 +592,7 @@ RM-PAREN removes the inserted parenthesis"
 		    (when (and rm-paren (looking-back "("))
 		      (replace-match "")))
 		  (setq namespace (r-autoyas-namespace funcname))
-		  (message "Namespace: `%s'" namespace)
+		  (r-autoyas-m "R-autoyas assumed the namespace for the function is: `%s'" namespace)
 		  (when (or
 			 (and r-autoyas-expand-package-functions-only namespace)
 			 (not r-autoyas-expand-package-functions-only))
@@ -585,8 +602,10 @@ RM-PAREN removes the inserted parenthesis"
 			  (if (or (not namespace) (not r-autoyas-save-expression-to-memory))
 			      (let ((function-name funcname)
 				    (n-comma n-comma))
+                                (r-autoyas-m "R-autoyas expanding snippet but not saving to memory")
 				(yas/expand-snippet snippet)
 				(setq ret t))
+                            (r-autoyas-m "R-autoyas saving snippet to `ess-mode'")
                             (yas/define-snippets 'ess-mode
 						 `((,(format "%s" funcname)
 						    ,(concat funcname snippet)
@@ -614,6 +633,7 @@ RM-PAREN removes the inserted parenthesis"
 
 (defun r-autoyas-inject-commands ()
   (interactive)
+  (r-autoyas-m "Injecting `r-autoyas-inject-commands'")
   (let ((cmd "if (!any(ls(all=TRUE) == \".r.autoyas.create\")){
 .r.autoyas.esc <- function(str) {
 str <- gsub('$', '\\\\$', str, fixed=TRUE);
@@ -743,6 +763,7 @@ cat(\"Loaded r-autoyas\\n\");
 (defun r-autoyas-expand-maybe (&rest ignore)
   "Might auto-expand snippet."
   (interactive)
+  (r-autoyas-m "Calling `r-autoyas-expang-maybe'")
   (when (string= ess-dialect "R")
     (if (not (r-autoyas-expand))
 	(call-interactively 'ess-indent-command))))
@@ -750,6 +771,7 @@ cat(\"Loaded r-autoyas\\n\");
 (defun r-autoyas-namespace (function-name)
   "Returns the namespace for FUNCTION-NAME, or nil if it cannot be determined."
   (let ((namespace nil))
+    (r-autoyas-m "Trying to determine the namespace for %s with `r-autoyas-namespace'" function-name)
     (ess-command (concat "print(" function-name ")\n")
                  (get-buffer-create " *r-autoyas*"))
     (save-excursion
@@ -770,11 +792,13 @@ cat(\"Loaded r-autoyas\\n\");
 
 (defun r-autoyas-preloaded-namespace-p (namespace)
   "Determines if NAMESPACE is preloaded in R.  It is based on the variable `r-autoyas-preloaded-packages'"
+  (r-autoyas-m "Called `r-autoyas-preloaded-namespace-p'")
   (memq namespace r-autoyas-preloaded-packages))
 
 (defun r-autoyas-defined-p (&optional with-paren)
   "Is the current function defined (like plot )"
   (interactive (list (yes-or-no-p "Paren?")))
+  (r-autoyas-m "Trying to figure if the current function is defined")
   (save-restriction
     (save-excursion 
       (widen) ;; Widen needed for autopair mode.
@@ -799,7 +823,7 @@ cat(\"Loaded r-autoyas\\n\");
             (setq ret nil))
           (when (or (and (fboundp 'interactive-p) (interactive-p))
                     (and (fboundp 'called-interactively-p) (called-interactively-p t)))
-            (message "Defined: %s" ret))
+            (r-autoyas-m "Defined: %s" ret))
           (symbol-value 'ret))))))
 
 ;;;###autoload
@@ -827,6 +851,7 @@ cat(\"Loaded r-autoyas\\n\");
 (defun r-autoyas-paren ()
   "Function to allow Auto-yas to insert parenthesis"
   (interactive)
+  (r-autoyas-m "Called `r-autoyas-paren'")
   (let ((r-autoyas-using-paren t))
     (if (and
          r-autoyas-auto-expand-with-paren

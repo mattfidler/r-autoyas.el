@@ -15,6 +15,41 @@ The following are needed:
 - To jump from field to feild press =TAB=.  If you did not change the
   field, the parameter will be deleted from this list
 - To exit the snipped and delete remaining arguments, press =C-g=
+* Options
+This is an incomplete list of user definable options.  The complete
+list can be retrieved by 
+=M-x customize-group r-autoyas=
+** Debugging
+Debugging messages can be put on-screen.  This is done by
+#+BEGIN_SRC emacs-lisp
+(setq r-autoyas-debug t)
+#+END_SRC
+** Sending a ... replacement to R via emacs instead of by a global options statement
+Uses Lisp-based dot-replacement defined by
+`r-autoyas-r-based-dot-replacement' instead of specifying through
+options in R startup.  This is on by default but can be turned off by
+#+BEGIN_SRC emacs-lisp
+(setq r-autoyas-use-r-based-dot-replacement nil)
+#+END_SRC
+** Specifying the `...' replacement via the R options() statement
+Emacs can change the functions `...' replacement through lisp.  The
+easiest way to change this is, typing:
+
+=M-x customize-variable r-autoyas-r-based-dot-replacement=
+** Using functions within a namespace only
+By default, R-autoyas only expands predefined functions in
+namespaces/package that are loaded in R.  This ignores any
+user-defined functions.  However, R-autoyas may be used to expand
+user-defined functions as well.  This is done with the
+=r-autoyas-expand-package-functions-only= variable.  To turn on
+r-autoyas's expansion of user-defined functions, the following code
+may be used:
+#+BEGIN_SRC emacs-lisp
+(setq r-autoyas-expand-package-functions-only nil)
+#+END_SRC
+
+This variable may also be customized.
+
 * Limitations
 - No nice error handling when no R process is found
 - Partial nested support -- not perfected
@@ -29,3 +64,4 @@ the following in ~/.emacs
 
 
 #  LocalWords:  yasnippets autoyas ESS Hartenstein
+* Wish-List/To-Do
