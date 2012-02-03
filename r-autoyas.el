@@ -7,9 +7,9 @@
 
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
 ;; Version: 0.25
-;; Last-Updated: Sat Dec  3 22:20:47 2011 (-0600)
+;; Last-Updated: Thu Feb  2 23:54:43 2012 (-0600)
 ;;           By: Matthew L. Fidler
-;;     Update #: 834
+;;     Update #: 839
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
@@ -24,7 +24,17 @@
 
 ;; The snippet expansion occurs with the normal tab key.
 
-;; Attempted to support nested autosnippets;  I'm not sure it works yet.
+;; Attempted to support nested autosnippets;  I'm not sure it works
+;; yet.
+
+;; Install:
+
+;; Put this in the load path, and then add the following to your
+;; .emacs or startup files:
+
+;; (require 'r-autoyas)
+;; (add hook 'ess-mode-hook 'r-autoyas-ess-activate)
+;; 
 
 ;; Usage:
 ;; * Start yas/minor-mode
@@ -53,6 +63,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 02-Feb-2012    Matthew L. Fidler  
+;;    Last-Updated: Sat Dec  3 22:20:47 2011 (-0600) #834 (Matthew L. Fidler)
+;;    This package no longer auto-loads.
 ;; 29-Nov-2011    Matthew L. Fidler  
 ;;    Last-Updated: Fri Nov 18 14:35:01 2011 (-0600) #799 (Matthew L. Fidler)
 ;;    Change the *r-autoyas* buffer to be hidden (ie " *r-autoyas*")
@@ -827,23 +840,22 @@ cat(\"Loaded r-autoyas\\n\");
           (symbol-value 'ret))))))
 
 ;;;###autoload
-(add-hook 'ess-mode-hook
-          '(lambda ()
-	     (require 'r-autoyas nil t)
-	     (when (featurep 'r-autoyas)
-	       (set (make-local-variable 'yas/fallback-behavior)
-		    '(apply r-autoyas-expand-maybe))
-	       (when (boundp 'autopair-handle-action-fns)
-		 (set (make-local-variable 'autopair-handle-action-fns)
-		      (list
-		       #'autopair-r-autoyas-paren-action)))
-               (yas/minor-mode 1)
-               (when (boundp 'yas/after-exit-snippet-hook)
-                 (add-hook 'yas/after-exit-snippet-hook
-                           (lambda()
-                             (interactive)
-                             (when r-autoyas-wrap-on-exit
-                               (r-autoyas-wrap))) t t)))))
+(defun r-autoyas-ess-activate ()
+  "R autoyas ESS hook"
+  (when (featurep 'r-autoyas)
+    (set (make-local-variable 'yas/fallback-behavior)
+         '(apply r-autoyas-expand-maybe))
+    (when (boundp 'autopair-handle-action-fns)
+      (set (make-local-variable 'autopair-handle-action-fns)
+           (list
+            #'autopair-r-autoyas-paren-action)))
+    (yas/minor-mode 1)
+    (when (boundp 'yas/after-exit-snippet-hook)
+      (add-hook 'yas/after-exit-snippet-hook
+                (lambda()
+                  (interactive)
+                  (when r-autoyas-wrap-on-exit
+                    (r-autoyas-wrap))) t t))))
 
 (defvar r-autoyas-paren-skip-autopair nil)
 (make-variable-buffer-local 'r-autoyas-paren-skip-autopair)
