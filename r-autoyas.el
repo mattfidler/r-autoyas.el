@@ -7,9 +7,9 @@
 
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
 ;; Version: 0.25
-;; Last-Updated: Thu Feb  2 23:54:43 2012 (-0600)
+;; Last-Updated: Mon May  7 13:03:41 2012 (-0500)
 ;;           By: Matthew L. Fidler
-;;     Update #: 839
+;;     Update #: 843
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
@@ -63,6 +63,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 07-May-2012    Matthew L. Fidler  
+;;    Last-Updated: Mon May  7 13:01:29 2012 (-0500) #842 (Matthew L. Fidler)
+;;    Changed the syntax table for `r-autoyas-expand' so that when a
+;;    snippet `csv' is defined and you expand at write.csv, write.csv
+;;    will be expanded instead of `csv'
 ;; 02-Feb-2012    Matthew L. Fidler  
 ;;    Last-Updated: Sat Dec  3 22:20:47 2011 (-0600) #834 (Matthew L. Fidler)
 ;;    This package no longer auto-loads.
@@ -272,8 +277,8 @@ plot(x= , y=NULL, type='p', xlim=NULL, ylim=NULL, log='', main=NULL, sub=NULL, x
 If this number is zero or below, always insert as a single line.
 
 "
-:type 'integer
-:group 'r-autoyas)
+  :type 'integer
+  :group 'r-autoyas)
 
 (defcustom r-autoyas-remove-explicit-assignments t
   "* Remove explicit assignments when appropriate.
@@ -339,12 +344,12 @@ write.table(d,
                "subscripts = !is.null(groups)"
                "subset = TRUE"))
     ("write.csv" (
-                 "x= "
-                 "file=\"\""
-                 "quote=TRUE"
-                 "eol=\"\\n\""
-                 "na=\"NA\""
-                 "row.names=TRUE"))
+                  "x= "
+                  "file=\"\""
+                  "quote=TRUE"
+                  "eol=\"\\n\""
+                  "na=\"NA\""
+                  "row.names=TRUE"))
     ("bwplot" (
                "allow.multiple = quote(is.null(groups) || outer)"
                "outer = FALSE"
@@ -446,7 +451,7 @@ write.table(d,
 		   (widen)
 		   (setq n-space (current-column)))
 		 (if (= 1 num) ""
-		     (concat ",\n" (make-string n-space ? ))))))))))
+                   (concat ",\n" (make-string n-space ? ))))))))))
      (if (and field (not (string= "" comma/text)))
          (if (or (not r-autoyas-remove-explicit-assignments) (rayas/require-explicit-p num))
              (concat field "=")
@@ -493,7 +498,7 @@ write.table(d,
 				 (format "${%s:$(rayas/comma \"%s\" %s)}${%s:%s$(rayas/ma \"\")}"
 					 num (match-string 1 x) num num (if (< 0 (length (match-string 2 x))) (match-string 2 x) " ")))
 			     (format "${%s:$(rayas/comma \"%s\" %s)}${%s:NULL$(rayas/ma \"\")}" num x num num))
-			     (setq num (+ num 1))))
+                         (setq num (+ num 1))))
 		     (nth 1 (assoc func r-autoyas-lisp-based-dot-replacement))
 		     "")))
 	    (replace-match (format "%s${%s:$(rayas/comma nil %s)}${%s:...$(rayas/ma \"\")}" snip num num num) t t)))
@@ -564,74 +569,77 @@ expand the snippets.
 RM-PAREN removes the inserted parenthesis"
   (interactive "*")
   (r-autoyas-m "Calling `r-autoyas-expand'")
+  (modify-syntax-entry ?. "w")
   (save-match-data
-      (save-restriction
-	(widen)
-	(let ((funcname (r-autoyas-defined-p rm-paren))
-	      (snippet "")
-	      namespace
-	      ret
-	      not-valid
-	      n-comma)
-	  (if (not funcname) nil
-            (r-autoyas-m "Starting to create snippet")
-	    (ess-command (concat ".r.autoyas.create('" funcname "')\n")
-			 (get-buffer-create " *r-autoyas*"))
-            (r-autoyas-m "Created snippet in ` *r-autoyas*'")
-	    (unless (null funcname)
-	      (let (snippet)
-		(save-excursion
-		  (with-current-buffer " *r-autoyas*"
-                    (r-autoyas-m "Trying to extract snippet.")
-		    (if (< (length (buffer-string)) 10);; '[1] " "' if no valid fun
-			(progn
-			  (message "function `%s' is not valid!" funcname)
-			  (setq not-valid t)
-			  (when (insert "("))
-			  (setq ret t))
-		      (delete-region 1 6)
-		      (goto-char (point-max))
-		      (delete-backward-char 2)
-		      (goto-char (point-min))
-		      (replace-string "\\\"" "\"")
-		      (goto-char (point-min))
-		      (replace-string "\\\\" "\\")
-		      (r-autoyas-generte-dotreplace-list-lisp funcname)
-		      (setq snippet (buffer-string)))))
-		(if not-valid
-		    (progn
-		      (setq ret nil))
-		  (save-excursion 
-		    (when (and rm-paren (looking-back "("))
-		      (replace-match "")))
-		  (setq namespace (r-autoyas-namespace funcname))
-		  (r-autoyas-m "R-autoyas assumed the namespace for the function is: `%s'" namespace)
-		  (when (or
-			 (and r-autoyas-expand-package-functions-only namespace)
-			 (not r-autoyas-expand-package-functions-only))
-		    (if snippet
-			(progn
-			  (setq n-comma (- (length (split-string snippet (regexp-quote "(rayas/comma") t)) 1))
-			  (if (or (not namespace) (not r-autoyas-save-expression-to-memory))
-			      (let ((function-name funcname)
-				    (n-comma n-comma))
-                                (r-autoyas-m "R-autoyas expanding snippet but not saving to memory")
-				(yas/expand-snippet snippet)
-				(setq ret t))
-                            (r-autoyas-m "R-autoyas saving snippet to `ess-mode'")
-                            (yas/define-snippets 'ess-mode
-						 `((,(format "%s" funcname)
-						    ,(concat funcname snippet)
-						    ,(format "%s" funcname)
-						    "(string= ess-dialect \"R\")"
-						    nil
-						    ,(format
-						      "((function-name \"%s\") (n-comma %s))"
-						      funcname n-comma))))
-                            (yas/expand)
-                            (setq ret t)))
-		      (setq ret t))))))
-            (symbol-value 'ret))))))
+    (save-restriction
+      (widen)
+      (let ((funcname (r-autoyas-defined-p rm-paren))
+            (snippet "")
+            namespace
+            ret
+            not-valid
+            n-comma)
+        (r-autoyas-m "Function to expand: %s" funcname)
+        (if (not funcname) nil
+          (r-autoyas-m "Starting to create snippet")
+          (ess-command (concat ".r.autoyas.create('" funcname "')\n")
+                       (get-buffer-create " *r-autoyas*"))
+          (r-autoyas-m "Created snippet in ` *r-autoyas*'")
+          (unless (null funcname)
+            (let (snippet)
+              (save-excursion
+                (with-current-buffer " *r-autoyas*"
+                  (r-autoyas-m "Trying to extract snippet.")
+                  (if (< (length (buffer-string)) 10);; '[1] " "' if no valid fun
+                      (progn
+                        (message "function `%s' is not valid!" funcname)
+                        (setq not-valid t)
+                        (when (insert "("))
+                        (setq ret t))
+                    (delete-region 1 6)
+                    (goto-char (point-max))
+                    (delete-backward-char 2)
+                    (goto-char (point-min))
+                    (replace-string "\\\"" "\"")
+                    (goto-char (point-min))
+                    (replace-string "\\\\" "\\")
+                    (r-autoyas-generte-dotreplace-list-lisp funcname)
+                    (setq snippet (buffer-string)))))
+              (if not-valid
+                  (progn
+                    (setq ret nil))
+                (save-excursion 
+                  (when (and rm-paren (looking-back "("))
+                    (replace-match "")))
+                (setq namespace (r-autoyas-namespace funcname))
+                (r-autoyas-m "R-autoyas assumed the namespace for the function is: `%s'" namespace)
+                (when (or
+                       (and r-autoyas-expand-package-functions-only namespace)
+                       (not r-autoyas-expand-package-functions-only))
+                  (if snippet
+                      (progn
+                        (setq n-comma (- (length (split-string snippet (regexp-quote "(rayas/comma") t)) 1))
+                        (if (or (not namespace) (not r-autoyas-save-expression-to-memory))
+                            (let ((function-name funcname)
+                                  (n-comma n-comma))
+                              (r-autoyas-m "R-autoyas expanding snippet but not saving to memory")
+                              (yas/expand-snippet snippet)
+                              (setq ret t))
+                          (r-autoyas-m "R-autoyas saving snippet to `ess-mode'")
+                          (yas/define-snippets 'ess-mode
+                                               `((,(format "%s" funcname)
+                                                  ,(concat funcname snippet)
+                                                  ,(format "%s" funcname)
+                                                  "(string= ess-dialect \"R\")"
+                                                  nil
+                                                  ,(format
+                                                    "((function-name \"%s\") (n-comma %s))"
+                                                    funcname n-comma))))
+                          (yas/expand)
+                          (setq ret t)))
+                    (setq ret t))))))
+          (symbol-value 'ret)))))
+  (modify-syntax-entry ?. "_"))
 
 (defun rayas/space (field-number)
   "Adds a dummy space so that reducing the yasnippet field to zero doesn't cause strange errors."
