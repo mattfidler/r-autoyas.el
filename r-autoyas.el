@@ -3,13 +3,18 @@
 ;; Filename: r-autoyas.el
 ;; Description: r-autoyas is a small ESS complement. It provides automatically created yasnippets for R function argument lists.
 ;; Author: Sven Hartenstein & Matthew Fidler
-;; Maintainer: Sven Hartenstein
-
+;; Maintainer: Matthew Fidler
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
 ;; Version: 0.25
-;; Last-Updated: Mon May  7 13:03:41 2012 (-0500)
+;; Last-Updated: Mon Jun  4 14:46:02 2012 (-0500)
 ;;           By: Matthew L. Fidler
-;;     Update #: 843
+;;     Update #: 845
+
+;; Version: 0.26
+;; Last-Updated: Mon Jun  4 14:38:55 2012 (-0500)
+;;           By: Matthew L. Fidler
+;;     Update #: 864
+
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
 ;; Compatibility:
@@ -63,6 +68,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 04-Jun-2012    Matthew L. Fidler  
+;;    Last-Updated: Mon Jun  4 14:37:39 2012 (-0500) #863 (Matthew L. Fidler)
+;;    Changed syntax table for yas/expand so that write.csv will
+;;    expand if you have a snippet named csv.
+;; 04-Jun-2012    Matthew L. Fidler  
+;;    Last-Updated: Mon May  7 13:23:33 2012 (-0500) #851 (Matthew L. Fidler)
+;;    Bug fix for autopair.
 ;; 07-May-2012    Matthew L. Fidler  
 ;;    Last-Updated: Mon May  7 13:01:29 2012 (-0500) #842 (Matthew L. Fidler)
 ;;    Changed the syntax table for `r-autoyas-expand' so that when a
@@ -855,7 +867,7 @@ cat(\"Loaded r-autoyas\\n\");
          '(apply r-autoyas-expand-maybe))
     (when (boundp 'autopair-handle-action-fns)
       (set (make-local-variable 'autopair-handle-action-fns)
-           (list
+           (list                        
             #'autopair-r-autoyas-paren-action)))
     (yas/minor-mode 1)
     (when (boundp 'yas/after-exit-snippet-hook)
@@ -893,17 +905,25 @@ cat(\"Loaded r-autoyas\\n\");
   "Autopair R autoyas paren-action"
   (if (string= ess-dialect "R")
       (condition-case err
-	  (let ((ret (and
+          (let ((yas/wrap-around-region yas/wrap-around-region)
+                (ret (and
 		      r-autoyas-auto-expand-with-paren
 		      (eq action 'opening)
 		      (= pair 41)
-		      (r-autoyas-defined-p t))))
-	    (if (not ret) (autopair-default-handle-action action pair pos-before)
-	      (setq ret (r-autoyas-expand t))
-	      (if ret
-		  (message "Expand ignoring ending )")
-		(autopair-default-handle-action action pair pos-before))))
-	(error (message "[r-autoyas-pair-error]: %s" (error-message-string err))))
+		      (r-autoyas-defined-p t)))
+                (pt (point)))
+	    (if (not ret)
+                (autopair-default-handle-action action pair pos-before)
+              (when (eq yas/wrap-around-region 'cua)
+                ;;TODO: Fix this to work with CUA-type wrapping
+                (setq yas/wrap-around-region nil))
+              (r-autoyas-expand t)
+              (message "%s,%s" pt (point))
+              (when (= (- pt 1) (point))
+                (insert "(")
+                (autopair-default-handle-action action pair pos-before)
+                )))
+        (error (message "[r-autoyas-pair-error]: %s" (error-message-string err))))
     (autopair-default-handle-action action pair pos-before)))
 
 (when (boundp 'ess-mode-map)
@@ -923,15 +943,15 @@ cat(\"Loaded r-autoyas\\n\");
                                                          (yas/snippet-fields snippet))))
            (active-field-pos (if (not snippet) nil (position active-field live-fields))))
       (if (not snippet) nil
-	active-field-pos))))
+        active-field-pos))))
 
 (defun r-autoyas-editing-field-num-p (&optional arg)
   "Which field is active?"
   (if arg
       (let ((active-field-pos (r-autoyas-active-field-number)))
-	(if active-field-pos
-	    (= active-field-pos arg)
-	  nil))
+        (if active-field-pos
+            (= active-field-pos arg)
+          nil))
     nil))
 
 (defun r-autoyas-update ()
@@ -944,27 +964,27 @@ cat(\"Loaded r-autoyas\\n\");
   "* Changes text when moving away AND original text has not changed"
   (cond
    ((or (and (not yas/modified-p) yas/moving-away-p)
-	(and yas/moving-away-p orig-text (string= orig-text yas/text)))
+        (and yas/moving-away-p orig-text (string= orig-text yas/text)))
     (let (r-autoyas-not-editing)
       (if (string= "" default-text)
-	  (yas/skip-and-clear-or-delete-char)
-	(insert default-text))
+          (yas/skip-and-clear-or-delete-char)
+        (insert default-text))
       (r-autoyas-update)))))
 
 (defadvice autopair-backspace (around r-autoyas-update)
   "Allows a backspace at the first to remove the autoexpanded snippet."
   (let ((do-it nil))
     (when (and autopair-mode
-	       (eq major-mode 'ess-mode)
-	       (string= ess-dialect "R")
-	       (r-autoyas-editing-field-num-p 0)
-	       (looking-back "([^(\n]*="))
+               (eq major-mode 'ess-mode)
+               (string= ess-dialect "R")
+               (r-autoyas-editing-field-num-p 0)
+               (looking-back "([^(\n]*="))
       (r-autoyas-exit-snippet-delete-remaining)
       (setq do-it t))
     ad-do-it
     (when do-it
       (when (looking-back "(")
-	(replace-match "")))))
+        (replace-match "")))))
 
 (ad-activate 'autopair-backspace)
 
@@ -980,8 +1000,19 @@ cat(\"Loaded r-autoyas\\n\");
   (let (r-autoyas-not-editing)
     (r-autoyas-update)))
 
+(defadvice yas/expand-from-trigger-key (around r-autoyas-expand)
+  "Changes Syntax table to allow proper expansion in R"
+  (if (and (member major-mode '(ess-mode inferior-ess-mode))
+           (string= "R" ess-dialect))
+      (modify-syntax-entry ?. "w"))
+  ad-do-it
+  (if (and (member major-mode '(ess-mode inferior-ess-mode))
+           (string= "R" ess-dialect))
+      (modify-syntax-entry ?. "_")))
+
 (ad-activate 'yas/next-field)
 (ad-activate 'yas/skip-and-clear-or-delete-char)
+(ad-activate 'yas/expand-from-trigger-key)
 
 (defalias 'rayas/ma 'r-autoyas-text-on-moving-away)
 
