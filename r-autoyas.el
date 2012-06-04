@@ -5,15 +5,11 @@
 ;; Author: Sven Hartenstein & Matthew Fidler
 ;; Maintainer: Matthew Fidler
 ;; Created: Fri Mar 25 10:36:08 2011 (-0500)
-;; Version: 0.25
-;; Last-Updated: Mon Jun  4 14:46:02 2012 (-0500)
+;;
+;; Version: 0.27
+;; Last-Updated: Mon Jun  4 15:26:09 2012 (-0500)
 ;;           By: Matthew L. Fidler
-;;     Update #: 845
-
-;; Version: 0.26
-;; Last-Updated: Mon Jun  4 14:38:55 2012 (-0500)
-;;           By: Matthew L. Fidler
-;;     Update #: 864
+;;     Update #: 866
 
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
 ;; Keywords: R yasnippet
@@ -68,6 +64,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 04-Jun-2012    Matthew L. Fidler  
+;;    Last-Updated: Mon Jun  4 15:25:23 2012 (-0500) #865 (Matthew L. Fidler)
+;;    Bug fix for autopair-mode
 ;; 04-Jun-2012    Matthew L. Fidler  
 ;;    Last-Updated: Mon Jun  4 14:37:39 2012 (-0500) #863 (Matthew L. Fidler)
 ;;    Changed syntax table for yas/expand so that write.csv will
@@ -921,8 +920,9 @@ cat(\"Loaded r-autoyas\\n\");
               (message "%s,%s" pt (point))
               (when (= (- pt 1) (point))
                 (insert "(")
-                (autopair-default-handle-action action pair pos-before)
-                )))
+                (autopair-default-handle-action action pair pos-before))
+              (when (= pt (point))
+                (autopair-default-handle-action action pair pos-before))))
         (error (message "[r-autoyas-pair-error]: %s" (error-message-string err))))
     (autopair-default-handle-action action pair pos-before)))
 
