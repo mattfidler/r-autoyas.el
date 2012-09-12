@@ -1,0 +1,5 @@
+(:name r-autoyas
+ :description "r-autoyas"
+ :website "https://github.com/mlf176f2/r-autoyas.el"
+ :type git
+ :url "https://github.com/mlf176f2/r-autoyas.el.git")

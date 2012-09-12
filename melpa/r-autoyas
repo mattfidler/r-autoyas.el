@@ -1,0 +1,4 @@
+(r-autoyas
+ :repo "mlf176f2/r-autoyas.el"
+ :fetcher github
+ :files ("r-autoyas.el"))
