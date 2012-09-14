@@ -13,7 +13,7 @@
 
 @node R-autoyas
 @chapter R-autoyas
-Sven Hartenstein & Matthew L. Fidler ## Library Information @emph{r-autoyas.el} --- Provides automatically created yasnippets for R function argument lists.
+Sven Hartenstein & Matthew L. Fidler ## Library Information @strong{r-autoyas.el} --- Provides automatically created yasnippets for R function argument lists.
 
 @itemize
 @item
@@ -98,6 +98,8 @@ Partial nested support -- not perfected ## Loading r-autoyas in ~/.emacs You may
 @node History
 @section History
 @itemize
+@item
+@strong{13-Sep-2012} -- Did not catch yas--update-mirrors. Need to fix this. ()
 @item
 @strong{12-Sep-2012} -- Have attempted to make r-autoyas compatible with yasnippet 0.8. This will possibly address github issue #4 ()
 @item
