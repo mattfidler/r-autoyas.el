@@ -319,6 +319,7 @@ Value: ((yas/expand-snippet yas-expand-snippet)
 Cache of complex language statments for R-autoyas
 * History
 
+ - 17-Sep-2012 ::  Added some more fixes to conform to the 0.8 style variables. ()
  - 13-Sep-2012 ::  Did not catch yas--update-mirrors. Need to fix this. ()
  - 12-Sep-2012 ::  Have attempted to make r-autoyas compatible with yasnippet 0.8. This will possibly address github issue #4 ()
  - 04-Jun-2012 ::  Bug fix for autopair-mode (Matthew L. Fidler)

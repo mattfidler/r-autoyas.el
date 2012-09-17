@@ -99,6 +99,8 @@ Partial nested support -- not perfected ## Loading r-autoyas in ~/.emacs You may
 @section History
 @itemize
 @item
+@strong{17-Sep-2012} -- Added some more fixes to conform to the 0.8 style variables. ()
+@item
 @strong{13-Sep-2012} -- Did not catch yas--update-mirrors. Need to fix this. ()
 @item
 @strong{12-Sep-2012} -- Have attempted to make r-autoyas compatible with yasnippet 0.8. This will possibly address github issue #4 ()

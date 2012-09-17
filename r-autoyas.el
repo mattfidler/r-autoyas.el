@@ -23,6 +23,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;; Change Log:
+;; 17-Sep-2012      
+;;    Last-Updated: Mon Jun 25 15:12:20 2012 (-0500) #873 (Matthew L. Fidler)
+;;    Added some more fixes to conform to the 0.8 style variables.
 ;; 13-Sep-2012      
 ;;    Last-Updated: Mon Jun 25 15:12:20 2012 (-0500) #873 (Matthew L. Fidler)
 ;;    Did not catch yas--update-mirrors.  Need to fix this.
@@ -191,7 +194,7 @@
     (yas/fallback-behavior yas-fallback-behavior)
     (yas/minor-mode yas-minor-mode)
     (yas/field-probably-deleted-p yas--field-probably-deleted-p)
-    (yas/field yas-field)
+    (yas/field yas--field)
     (yas/field-text-for-display yas--field-text-for-display)
     (yas/snippet-control-overlay yas--snippet-control-overlay)
     (yas/exit-snippet yas-exit-snippet)
@@ -941,16 +944,18 @@ cat(\"Loaded r-autoyas\\n\");
   "Get the active field position"
   (if (boundp 'r-autoyas-not-editing)
       nil
-    (let* ((arg (or arg
-                    0))
+    (let* ((arg (or arg  0))
            (snippet (first (yas--snippets-at-point)))
-           (active-field (if snippet (overlay-get yas-active-field-overlay 'yas-field) nil))
-           (live-fields (if (not snippet) nil (remove-if #'(lambda (field)
-                                                             (and (not (eq field active-field))
-                                                                  (yas--field-probably-deleted-p snippet field)))
-                                                         (yas--snippet-fields snippet))))
+           (active-field (if snippet (overlay-get yas--active-field-overlay 'yas--field) nil))
+           (live-fields (if (not snippet) nil
+                          (remove-if #'
+                           (lambda (field)
+                             (and (not (eq field active-field))
+                                  (yas--field-probably-deleted-p snippet field)))
+                                     (yas--snippet-fields snippet))))
            (active-field-pos (if (not snippet) nil (position active-field live-fields))))
       (if (not snippet) nil
+        (message "Active Field: %s" active-field-pos)
         active-field-pos))))
 
 (defun r-autoyas-editing-field-num-p (&optional arg)
