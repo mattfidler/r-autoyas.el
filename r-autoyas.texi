@@ -28,7 +28,7 @@ Sven Hartenstein & Matthew L. Fidler ## Library Information @strong{r-autoyas.el
 @strong{Created} -- Fri Mar 25 10:36:08 2011 (-0500)
 
 @item
-@strong{Version} -- 0.27
+@strong{Version} -- 0.28
 @item
 @strong{Last-Updated} -- Mon Jun 25 15:12:20 2012 (-0500)
 @item
@@ -98,6 +98,8 @@ Partial nested support -- not perfected ## Loading r-autoyas in ~/.emacs You may
 @node History
 @section History
 @itemize
+@item
+@strong{18-Sep-2012} -- Should be compatible with 0.6 and 0.8 versions of Yasnippet and fix issue #4 ()
 @item
 @strong{17-Sep-2012} -- Should now work with yasnippet 0.8 -- Mostly fixes issue #4@comma{} but needs to confirm backward compatability with 0.6. ()
 @item

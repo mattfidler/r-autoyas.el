@@ -9,7 +9,7 @@
  - Maintainer :: Matthew Fidler
  - Created :: Fri Mar 25 10:36:08 2011 (-0500)
 
- - Version :: 0.27
+ - Version :: 0.28
  - Last-Updated :: Mon Jun 25 15:12:20 2012 (-0500)
  -           By :: Matthew L. Fidler
  -     Update # :: 873
@@ -287,6 +287,9 @@ Defines if R-autoyas attempts to wrap end of lines.
 
 ** Internal Variables
 
+*** r-autoyas-backward
+R-autoyas use backward compatability?
+
 *** r-autoyas-backward-compatability
 Yasnippet backward compatability functions used in r-autoyas.el
 
@@ -310,7 +313,7 @@ Value: ((yas/expand-snippet yas-expand-snippet)
  (yas/snippet-control-overlay yas--snippet-control-overlay)
  (yas/exit-snippet yas-exit-snippet)
  (yas/check-commit-snippet yas--check-commit-snippet)
- (yas/define-snippets yas--check-commit-snippet)
+ (yas/define-snippets yas-define-snippets)
  (yas/after-exit-snippet-hook yas-after-exit-snippet-hook))
 
 
@@ -319,6 +322,7 @@ Value: ((yas/expand-snippet yas-expand-snippet)
 Cache of complex language statments for R-autoyas
 * History
 
+ - 18-Sep-2012 ::  Should be compatible with 0.6 and 0.8 versions of Yasnippet and fix issue #4 ()
  - 17-Sep-2012 ::  Should now work with yasnippet 0.8 -- Mostly fixes issue #4, but needs to confirm backward compatability with 0.6. ()
  - 17-Sep-2012 ::  Added some more fixes to conform to the 0.8 style variables. ()
  - 13-Sep-2012 ::  Did not catch yas--update-mirrors. Need to fix this. ()
