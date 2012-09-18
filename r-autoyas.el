@@ -25,6 +25,10 @@
 ;;; Change Log:
 ;; 17-Sep-2012      
 ;;    Last-Updated: Mon Jun 25 15:12:20 2012 (-0500) #873 (Matthew L. Fidler)
+;;    Should now work with yasnippet 0.8 -- Mostly fixes issue #4, but needs
+;;    to confirm backward compatability with 0.6.
+;; 17-Sep-2012      
+;;    Last-Updated: Mon Jun 25 15:12:20 2012 (-0500) #873 (Matthew L. Fidler)
 ;;    Added some more fixes to conform to the 0.8 style variables.
 ;; 13-Sep-2012      
 ;;    Last-Updated: Mon Jun 25 15:12:20 2012 (-0500) #873 (Matthew L. Fidler)
@@ -48,7 +52,7 @@
 ;;    Changed the syntax table for `r-autoyas-expand' so that when a
 ;;    snippet `csv' is defined and you expand at write.csv, write.csv
 ;;    will be expanded instead of `csv'
-;; 02-Feb-2012    Matthew L. Fidler  
+;; 02-Feb-2012    Matthew L. Fidler
 ;;    Last-Updated: Sat Dec  3 22:20:47 2011 (-0600) #834 (Matthew L. Fidler)
 ;;    This package no longer auto-loads.
 ;; 29-Nov-2011    Matthew L. Fidler  
@@ -731,7 +735,7 @@ tmp <- deparse(formals[[field]]);
 if (all(regexpr(\"[{}\\n]\", tmp) == -1)){
 tmp <- .r.autoyas.esc(tmp);
 #tmp2 <- gsub(\"\\\"\",\"\\\\\\\\\\\\\\\"\",tmp);
-tmp2 <- gsub(\"\\\"\",\"%`%\",tmp);
+tmp2 <- gsub(\"\\\"\",\"%'%\",tmp);
 tmp2 <- paste(\"\\\"\",tmp2,\"\\\"\",sep=\"\");
 str <- append(str, paste('${',nr,':$(rayas-comma \\\"',field,'\\\" ',nr,')}${',nr,':',tmp,'$(rayas-ma \"\" ',tmp2,')}${',nr,':$(rayas-space ',nr,')}', sep=''));
 nr <- nr+1;
@@ -872,6 +876,7 @@ cat(\"Loaded r-autoyas\\n\");
 ;;;###autoload
 (defun r-autoyas-ess-activate ()
   "R autoyas ESS hook"
+  (interactive)
   (when (featurep 'r-autoyas)
     (set (make-local-variable 'yas-fallback-behavior)
          '(apply r-autoyas-expand-maybe))
@@ -974,15 +979,19 @@ cat(\"Loaded r-autoyas\\n\");
       (yas--update-mirrors snippet))))
 
 (defun r-autoyas-text-on-moving-away (default-text &optional orig-text)
-  "* Changes text when moving away AND original text has not changed"
-  (cond
-   ((or (and (not yas-modified-p) yas-moving-away-p)
-        (and yas-moving-away-p orig-text (string= orig-text yas-text)))
-    (let (r-autoyas-not-editing)
-      (if (string= "" default-text)
-          (yas-skip-and-clear-or-delete-char)
-        (insert default-text))
-      (r-autoyas-update)))))
+  "* Changes text when moving away AND original text has not changed" ;
+  (let ((dtxt (replace-regexp-in-string "%'%" "\"" default-text nil t))
+        (otxt (if orig-text
+                  (replace-regexp-in-string "%'%" "\"" orig-text nil t)
+                nil)))
+    (cond
+     ((or (and (not yas-modified-p) yas-moving-away-p)
+          (and yas-moving-away-p otxt (string= otxt yas-text)))
+      (let (r-autoyas-not-editing)
+        (if (string= "" dtxt)
+            (yas-skip-and-clear-or-delete-char)
+          (insert dtxt))
+        (r-autoyas-update))))))
 
 (defadvice autopair-backspace (around r-autoyas-update)
   "Allows a backspace at the first to remove the autoexpanded snippet."
