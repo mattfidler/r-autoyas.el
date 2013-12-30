@@ -12,6 +12,7 @@
 ;;     Update #: 873
 
 ;; URL: https://github.com/mlf176f2/r-autoyas.el
+;; Package-Requires: ((ess "0") (yasnippet "0.8.0"))
 ;; Keywords: R yasnippet
 ;; Compatibility:
 ;;
