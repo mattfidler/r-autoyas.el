@@ -77,7 +77,7 @@ Compatibility:
 
   #+BEGIN_SRC emacs-lisp :results silent
 (require 'r-autoyas)
-(add hook 'ess-mode-hook 'r-autoyas-ess-activate)
+(add-hook 'ess-mode-hook 'r-autoyas-ess-activate)
   #+END_SRC
 
 
